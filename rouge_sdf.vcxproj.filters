@@ -29,5 +29,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+    <None Include="packages\zlib.v140.windesktop.msvcstl.dyn.rt-dyn.1.2.8.8\zlib.v140.windesktop.msvcstl.dyn.rt-dyn.1.2.8.8.nupkg" />
+  </ItemGroup>
+  <ItemGroup>
+    <Xml Include="FodyWeavers.xml" />
   </ItemGroup>
 </Project>

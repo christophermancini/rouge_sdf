@@ -1,3 +1,5 @@
+#include <locale>
+#include <codecvt>
 #include "BasicFile.hpp"
 #include "utils.h"
 #include <zlib.h>
@@ -32,7 +34,7 @@ struct SdfDdsHeader
 struct FileTree
 {
     template <typename Callback>
-    static void ParseNames(File data, const Callback &cb, std::string name="")
+    static void ParseNames(File data, std::string mode, const Callback &cb, std::string name="")
     {
 
         auto readVariadicInteger = [&data](uint32_t count)
@@ -56,10 +58,31 @@ struct FileTree
             {
                 name += data.Read<char>();
             }
-            ParseNames(data, cb, name);
+            ParseNames(data, mode, cb, name);
         }
         else if (ch >= 'A' && ch <= 'Z') //file entry
         {
+            std::wstring fileName = AnsiToUnicode(name);
+
+			// short-circuits method if not in one of the following directories
+			if (mode.compare("minimal") == 0) {
+				if (fileName.find(L"rogue\\game system data") == std::string::npos && fileName.find(L"rogue\\localization") == std::string::npos && fileName.find(L"rogue\\skillscript") == std::string::npos) {
+					std::cout << "Skipping: " << name << std::endl;
+					return;
+				}
+			}
+			else if(mode.compare("assets") == 0) {
+				if (fileName.find(L"rogue\\baked") == std::string::npos) {
+					std::cout << "Skipping: " << name << std::endl;
+					return;
+				}
+			}
+			else if (mode.compare("minimal+assets") == 0) {
+				if (fileName.find(L"rogue\\game system data") == std::string::npos && fileName.find(L"rogue\\localization") == std::string::npos && fileName.find(L"rogue\\skillscript") == std::string::npos && fileName.find(L"rogue\\baked") == std::string::npos) {
+					std::cout << "Skipping: " << name << std::endl;
+					return;
+				}
+			}
 
             ch = ch - 'A';
             auto count1 = ch & 7;
@@ -133,8 +156,8 @@ struct FileTree
             File data2 = data;
             uint32_t offset = data.Read<uint32_t>();
             data2.Seek(offset);
-            ParseNames(data, cb, name);
-            ParseNames(data2, cb, name);
+            ParseNames(data, mode, cb, name);
+            ParseNames(data2, mode, cb, name);
         }
     }
 };
@@ -142,16 +165,28 @@ struct FileTree
 
 int wmain(int argc, wchar_t* argv[])
 {
-    if (argc != 3)
+    if (argc < 3)
     {
-        std::cout << "Tom Clancy's The Division .sdftoc extractor v2" << std::endl;
-        std::cout << "usage: rouge_sdf.exe <.sdftoc path> <output directory>" << std::endl;
-        return 0;
+        std::cout << "Tom Clancy's The Division .sdftoc extractor v3" << std::endl;
+        std::cout << "usage: rouge_sdf.exe <.sdftoc path> <output directory> <mode>" << std::endl;
+		std::cout << "Valid Modes:" << std::endl;
+		std::cout << "  minimal - extracts rogue\\game system data, rogue\\localization and rogue\\skillscript directories only" << std::endl;
+		std::cout << "  assets - extracts rogue\\baked only" << std::endl;
+		std::cout << "  minimal+assets - extracts the directories included in both minimal & assets modes" << std::endl;
+		return 0;
     }
     try
     {
-        std::wstring sdfTocFile = argv[1];
+		std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
+		std::string mode = "full";
+
+		std::wstring sdfTocFile = argv[1];
         std::wstring outputDir = argv[2];
+        if (argc == 4) {
+            mode = converter.to_bytes(argv[3]);
+        }
+
+		std::cout << "Begin " << mode << " extraction" << std::endl;
 
         outputDir = boost::filesystem::path(outputDir).remove_trailing_separator().wstring() + L"\\";
 
@@ -176,11 +211,14 @@ int wmain(int argc, wchar_t* argv[])
         uLong decompSize = header.decompressedSize;
         uncompress(decompressed.get(), &decompSize, compressed.get(), header.compressedSize);
         File f = File(MakeBlockMemory(std::move(decompressed), decompSize));
-        FileTree::ParseNames(f, [&](const std::string &name, uint64_t packageId, uint64_t packageOffset,
+        FileTree::ParseNames(f, mode, [&](const std::string &name, uint64_t packageId, uint64_t packageOffset,
             uint64_t decompressedSize, const std::vector<uint64_t> & compSizeArray,
             uint64_t ddsType, bool append, bool useDDS)
         {
-            std::cout << name << std::endl;
+            std::wstring outFileName = outputDir + AnsiToUnicode(name);
+            std::replace(outFileName.begin(), outFileName.end(), L'/', L'\\');
+
+            std::cout << "Processing: " << name << std::endl;
 
             boost::filesystem::path sdfTocPath(sdfTocFile);
             std::wstring layer;
@@ -205,8 +243,6 @@ int wmain(int argc, wchar_t* argv[])
 
             BlockPtr fileBlock = MakeBlockDisk(sdfDataPath);
 
-            std::wstring outFileName = outputDir + AnsiToUnicode(name);
-            std::replace(outFileName.begin(), outFileName.end(), L'/', L'\\');
             CreateDirectoryRecursively(ExtractFilePath(outFileName));
 
             BlockPtr resultBlock;
