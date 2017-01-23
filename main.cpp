@@ -167,7 +167,7 @@ int wmain(int argc, wchar_t* argv[])
 {
     if (argc < 3)
     {
-        std::cout << "Tom Clancy's The Division .sdftoc extractor v3" << std::endl;
+        std::cout << "Tom Clancy's The Division .sdftoc extractor v.3" << std::endl;
         std::cout << "usage: rouge_sdf.exe <.sdftoc path> <output directory> [mode]" << std::endl;
 		std::cout << "Valid Modes:" << std::endl;
 		std::cout << "  full - extracts all files [default]" << std::endl;
