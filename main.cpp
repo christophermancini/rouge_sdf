@@ -168,8 +168,9 @@ int wmain(int argc, wchar_t* argv[])
     if (argc < 3)
     {
         std::cout << "Tom Clancy's The Division .sdftoc extractor v3" << std::endl;
-        std::cout << "usage: rouge_sdf.exe <.sdftoc path> <output directory> <mode>" << std::endl;
+        std::cout << "usage: rouge_sdf.exe <.sdftoc path> <output directory> [mode]" << std::endl;
 		std::cout << "Valid Modes:" << std::endl;
+		std::cout << "  full - extracts all files [default]" << std::endl;
 		std::cout << "  minimal - extracts rogue\\game system data, rogue\\localization and rogue\\skillscript directories only" << std::endl;
 		std::cout << "  assets - extracts rogue\\baked only" << std::endl;
 		std::cout << "  minimal+assets - extracts the directories included in both minimal & assets modes" << std::endl;
