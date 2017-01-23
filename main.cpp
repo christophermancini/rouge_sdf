@@ -29,8 +29,6 @@ struct SdfDdsHeader
 
 #pragma pack(pop)
 
-
-
 struct FileTree
 {
     template <typename Callback>
@@ -47,7 +45,9 @@ struct FileTree
             }
             return result;
         };
+
         auto ch = data.Read<char>();
+
         if (ch == 0)
             throw std::exception("Unexcepted byte in file tree");
         if (ch >= 1 && ch <= 0x1f) //string part
@@ -150,14 +150,12 @@ int wmain(int argc, wchar_t* argv[])
     }
     try
     {
-
         std::wstring sdfTocFile = argv[1];
         std::wstring outputDir = argv[2];
 
         outputDir = boost::filesystem::path(outputDir).remove_trailing_separator().wstring() + L"\\";
 
         auto file = MakeFileDisk(sdfTocFile);
-
 
         SdfTocHeader header = file.Read<SdfTocHeader>();
         SdfTocId id = file.Read<SdfTocId>();
@@ -171,7 +169,6 @@ int wmain(int argc, wchar_t* argv[])
         auto block11 = file.Array<SdfTocId>(header.block1count);;
         auto ddsHeaderBlock = file.Array<SdfDdsHeader>(header.ddsHeaderBlockCount);
 
-
         std::unique_ptr<uint8_t[]> decompressed = std::make_unique<uint8_t[]>(header.decompressedSize);
         std::unique_ptr<uint8_t[]> compressed = std::make_unique<uint8_t[]>(header.compressedSize);
 
@@ -183,8 +180,6 @@ int wmain(int argc, wchar_t* argv[])
             uint64_t decompressedSize, const std::vector<uint64_t> & compSizeArray,
             uint64_t ddsType, bool append, bool useDDS)
         {
-
-
             std::cout << name << std::endl;
 
             boost::filesystem::path sdfTocPath(sdfTocFile);
