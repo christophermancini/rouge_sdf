@@ -66,19 +66,19 @@ struct FileTree
 
 			// short-circuits method if not in one of the following directories
 			if (mode.compare("minimal") == 0) {
-				if (fileName.find(L"rogue\\game system data") == std::string::npos && fileName.find(L"rogue\\localization") == std::string::npos && fileName.find(L"rogue\\skillscript") == std::string::npos) {
+				if (fileName.find(L"rogue/game system data") == std::string::npos && fileName.find(L"rogue/localization") == std::string::npos && fileName.find(L"rogue/skillscript") == std::string::npos) {
 					std::cout << "Skipping: " << name << std::endl;
 					return;
 				}
 			}
 			else if(mode.compare("assets") == 0) {
-				if (fileName.find(L"rogue\\baked") == std::string::npos) {
+				if (fileName.find(L"rogue/baked/art") == std::string::npos) {
 					std::cout << "Skipping: " << name << std::endl;
 					return;
 				}
 			}
 			else if (mode.compare("minimal+assets") == 0) {
-				if (fileName.find(L"rogue\\game system data") == std::string::npos && fileName.find(L"rogue\\localization") == std::string::npos && fileName.find(L"rogue\\skillscript") == std::string::npos && fileName.find(L"rogue\\baked") == std::string::npos) {
+				if (fileName.find(L"rogue/game system data") == std::string::npos && fileName.find(L"rogue/localization") == std::string::npos && fileName.find(L"rogue/skillscript") == std::string::npos && fileName.find(L"rogue/baked/art") == std::string::npos) {
 					std::cout << "Skipping: " << name << std::endl;
 					return;
 				}
